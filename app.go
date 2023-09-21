@@ -1,6 +1,8 @@
 package main
 
 import (
+	"changeme/pkg/db"
+	"changeme/pkg/helpers"
 	"context"
 	"fmt"
 
@@ -29,16 +31,23 @@ func (a *App) Greet(name string) string {
 }
 
 func StartHttp() {
+	// db open
+	db.Conn()
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+
 	r.GET("/api/menu", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+		rows, err := db.DB.Query("select * from note_menus where is_deleted = 0")
+		helpers.CheckErr(err)
+		var menuList = []MenuList{}
+		fmt.Println(rows.Next())
+		for rows.Next() {
+			var menu MenuList
+			err = rows.Scan(&menu.MenuId, &menu.Name, &menu.PId,
+				&menu.AddTime, &menu.IsDeleted, &menu.IsDir)
+			menuList = append(menuList, menu)
+		}
+		c.JSON(200, GetMenuTree(menuList, 0))
+
 	})
 	r.POST("/api/menu", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -66,4 +75,25 @@ func StartHttp() {
 		})
 	})
 	r.Run(":7999") // listen and serve on 0.0.0.0:8080
+}
+
+type MenuList struct {
+	MenuId    int    `json:"menu_id"`
+	Name      string `json:"name"`
+	PId       int    `json:"p_id"`
+	AddTime   int    `json:"add_time"`
+	IsDeleted int    `json:"is_deleted"`
+	IsDir     int    `json:"is_dir"`
+	Children  any    `json:"children,omitempty"`
+}
+
+func GetMenuTree(menus []MenuList, pid int) any {
+	var list []MenuList
+	for _, v := range menus {
+		if v.PId == pid {
+			v.Children = GetMenuTree(menus, v.MenuId)
+			list = append(list, v)
+		}
+	}
+	return list
 }
