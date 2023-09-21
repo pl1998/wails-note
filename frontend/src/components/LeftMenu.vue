@@ -17,10 +17,13 @@ function greet() {
 
 </script>
 <template>
-    <div>
-        <v-md-editor v-model="text"  height="400px"></v-md-editor>
-        <!-- left-toolbar="undo redo clear item  | emoji | tip" -->
+    <div class="left-main">
+      
     </div>
-
 </template>
+<style>
+.left-main{
+    
+}
+</style>
   

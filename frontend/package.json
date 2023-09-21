@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@kangc/v-md-editor": "^2.3.17",
+    "highlight.js": "^11.8.0",
+    "prismjs": "^1.29.0",
+    "vite-plugin-prismjs": "^0.0.8",
     "vue": "^3.2.37"
   },
   "devDependencies": {

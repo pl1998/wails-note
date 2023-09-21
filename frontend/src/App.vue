@@ -4,8 +4,7 @@ import EditMarkdown from './components/EditMarkdown.vue'
 </script>
 
 <template>
-
-  <!-- <img id="logo" alt="Wails logo" src="./assets/images/logo-universal.png"/> -->
+  
   <EditMarkdown/>
 </template>
 
