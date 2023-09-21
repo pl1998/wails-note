@@ -18,6 +18,8 @@ func main() {
 	// Create an instance of the app structure
 	app := NewApp()
 
+	// 启动服务
+	go StartHttp()
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:             "wails-app",
