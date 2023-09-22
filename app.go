@@ -1,11 +1,10 @@
 package main
 
 import (
-	"changeme/pkg/db"
-	"changeme/pkg/helpers"
+	"changeme/app/handler"
+	"changeme/pkg/model"
 	"context"
 	"fmt"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,30 +29,19 @@ func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
 
+// StartHttp http service
 func StartHttp() {
 	// db open
-	db.Conn()
+	model.Conn()
 	r := gin.Default()
 
-	r.GET("/api/menu", func(c *gin.Context) {
-		rows, err := db.DB.Query("select * from note_menus where is_deleted = 0")
-		helpers.CheckErr(err)
-		var menuList = []MenuList{}
-		fmt.Println(rows.Next())
-		for rows.Next() {
-			var menu MenuList
-			err = rows.Scan(&menu.MenuId, &menu.Name, &menu.PId,
-				&menu.AddTime, &menu.IsDeleted, &menu.IsDir)
-			menuList = append(menuList, menu)
-		}
-		c.JSON(200, GetMenuTree(menuList, 0))
+	menu_handler := new(handler.MenuHandler)
 
-	})
-	r.POST("/api/menu", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	r.GET("/api/menu", menu_handler.Index)
+	r.POST("/api/menu", menu_handler.Store)
+	r.DELETE("/api/menu/:id", menu_handler.Delete)
+	r.PUT("/api/update", menu_handler.Update)
+
 	r.DELETE("/api/menu", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
@@ -75,25 +63,4 @@ func StartHttp() {
 		})
 	})
 	r.Run(":7999") // listen and serve on 0.0.0.0:8080
-}
-
-type MenuList struct {
-	MenuId    int    `json:"menu_id"`
-	Name      string `json:"name"`
-	PId       int    `json:"p_id"`
-	AddTime   int    `json:"add_time"`
-	IsDeleted int    `json:"is_deleted"`
-	IsDir     int    `json:"is_dir"`
-	Children  any    `json:"children,omitempty"`
-}
-
-func GetMenuTree(menus []MenuList, pid int) any {
-	var list []MenuList
-	for _, v := range menus {
-		if v.PId == pid {
-			v.Children = GetMenuTree(menus, v.MenuId)
-			list = append(list, v)
-		}
-	}
-	return list
 }
