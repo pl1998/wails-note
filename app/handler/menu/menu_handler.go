@@ -1,6 +1,7 @@
-package handler
+package menu
 
 import (
+	"changeme/app/handler"
 	"changeme/app/model/menu"
 	"changeme/app/requests"
 	"changeme/pkg/helpers"
@@ -24,7 +25,7 @@ func (*MenuHandler) Index(cxt *gin.Context) {
 		Where("is_deleted =?", 0).
 		Order("sort desc").
 		Order("sort_time desc").
-		Preload("Notes").
+		Preload("NoteList").
 		Find(&menuList)
 	response.
 		SuccessResponse(GetMenuTree(menuList, 0)).
@@ -36,8 +37,8 @@ func (*MenuHandler) Index(cxt *gin.Context) {
 func (*MenuHandler) Store(cxt *gin.Context) {
 	params := requests.NoteMenuStoreForm{
 		Name:  cxt.PostForm("name"),
-		IsDir: helpers.StringToInt(cxt.PostForm("is_dir")),
-		Pid:   uint64(helpers.StringToInt(cxt.PostForm("p_id"))),
+		IsDir: helpers.StringToInt(cxt.DefaultPostForm("is_dir", "0")),
+		Pid:   uint64(helpers.StringToInt(cxt.DefaultPostForm("p_id", "0"))),
 	}
 	errs := validator.New().Struct(params)
 	if errs != nil {
@@ -60,13 +61,9 @@ func (*MenuHandler) Store(cxt *gin.Context) {
 
 // Delete menu
 func (*MenuHandler) Delete(cxt *gin.Context) {
-	err, person := GetPersonId(cxt)
-	if err != nil {
-		response.FailResponse(http.StatusInternalServerError, "参数错误！").WriteTo(cxt)
-		return
-	}
+	id := handler.GetId(cxt)
 	var note_menu menu.NoteMenus
-	if result := model.DB.Model(&menu.NoteMenus{}).Where("menu_id=?", person.ID).Find(&note_menu); result.RowsAffected == 0 {
+	if result := model.DB.Model(&menu.NoteMenus{}).Where("menu_id=?", id).Find(&note_menu); result.RowsAffected == 0 {
 		response.FailResponse(http.StatusInternalServerError, "删除失败！").WriteTo(cxt)
 		return
 	}

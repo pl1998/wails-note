@@ -1,7 +1,9 @@
 package main
 
 import (
-	"changeme/app/handler"
+	"changeme/app/handler/menu"
+	"changeme/app/handler/note"
+	"changeme/app/middleware"
 	"changeme/pkg/model"
 	"context"
 	"fmt"
@@ -34,33 +36,19 @@ func StartHttp() {
 	// db open
 	model.Conn()
 	r := gin.Default()
-
-	menu_handler := new(handler.MenuHandler)
+	r.Use(middleware.Cors())
+	menu_handler := new(menu.MenuHandler)
+	note_handler := new(note.NoteHandler)
 
 	r.GET("/api/menu", menu_handler.Index)
 	r.POST("/api/menu", menu_handler.Store)
 	r.DELETE("/api/menu/:id", menu_handler.Delete)
 	r.PUT("/api/update", menu_handler.Update)
 
-	r.DELETE("/api/menu", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	r.POST("/api/note", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	r.PUT("/api/note", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	r.DELETE("/api/note", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	r.GET("/api/note/:id", note_handler.Index)
+	r.POST("/api/note", note_handler.Store)
+	r.DELETE("/api/note/:id", note_handler.Delete)
+	r.PUT("/api/note/:id", note_handler.Update)
+
 	r.Run(":7999") // listen and serve on 0.0.0.0:8080
 }

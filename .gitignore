@@ -2,3 +2,4 @@ build/bin
 node_modules
 .idea
 frontend/dist
+note.db

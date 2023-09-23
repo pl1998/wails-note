@@ -9,6 +9,7 @@ import vuepressTheme from '@kangc/v-md-editor/lib/theme/vuepress.js';
 import '@kangc/v-md-editor/lib/theme/style/vuepress.css';
 
 
+
 // highlightjs
 import Prism from 'prismjs';
 
@@ -42,6 +43,13 @@ import createTipPlugin from '@kangc/v-md-editor/lib/plugins/tip/index';
 import '@kangc/v-md-editor/lib/plugins/tip/tip.css';
 
 
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+
+// import {store} from "./store/index";
+
+
+
 VueMarkdownEditor.Codemirror = Codemirror;
 VueMarkdownEditor.use(vuepressTheme, {
   Prism,
@@ -51,6 +59,6 @@ VueMarkdownEditor.use(vuepressTheme, {
   },
 }).use(createEmojiPlugin()).use(createTipPlugin());
 
-createApp(App).use(VueMarkdownEditor).mount('#app')
+createApp(App).use(ElementPlus).use(VueMarkdownEditor).mount('#app')
 
 
