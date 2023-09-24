@@ -38,6 +38,9 @@ import 'codemirror/lib/codemirror.css';
 import createEmojiPlugin from '@kangc/v-md-editor/lib/plugins/emoji/index';
 import '@kangc/v-md-editor/lib/plugins/emoji/emoji.css';
 
+import createCopyCodePlugin from '@kangc/v-md-editor/lib/plugins/copy-code/index';
+import '@kangc/v-md-editor/lib/plugins/copy-code/copy-code.css';
+
 
 import createTipPlugin from '@kangc/v-md-editor/lib/plugins/tip/index';
 import '@kangc/v-md-editor/lib/plugins/tip/tip.css';
@@ -57,7 +60,7 @@ VueMarkdownEditor.use(vuepressTheme, {
     // md为 markdown-it 实例，可以在此处进行修改配置,并使用 plugin 进行语法扩展
     // md.set(option).use(plugin);
   },
-}).use(createEmojiPlugin()).use(createTipPlugin());
+}).use(createEmojiPlugin()).use(createTipPlugin()).use(createCopyCodePlugin());
 
 createApp(App).use(ElementPlus).use(VueMarkdownEditor).mount('#app')
 

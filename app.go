@@ -39,6 +39,7 @@ func StartHttp() {
 	r.Use(middleware.Cors())
 	menu_handler := new(menu.MenuHandler)
 	note_handler := new(note.NoteHandler)
+	gin.SetMode("debug")
 
 	r.GET("/api/menu", menu_handler.Index)
 	r.POST("/api/menu", menu_handler.Store)

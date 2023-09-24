@@ -22,10 +22,10 @@ func (*MenuHandler) Index(cxt *gin.Context) {
 	var menuList []menu.NoteMenus
 	model.DB.
 		Model(&menu.NoteMenus{}).
+		Preload("NoteList").
 		Where("is_deleted =?", 0).
 		Order("sort desc").
 		Order("sort_time desc").
-		Preload("NoteList").
 		Find(&menuList)
 	response.
 		SuccessResponse(GetMenuTree(menuList, 0)).

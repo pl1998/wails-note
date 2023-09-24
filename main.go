@@ -14,12 +14,12 @@ import (
 var assets embed.FS
 
 func main() {
-	StartHttp()
+
 	// Create an instance of the app structure
 	app := NewApp()
 
-	// 启动服务
-	StartHttp()
+	// Start http server
+	go StartHttp()
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:             "wails-app",

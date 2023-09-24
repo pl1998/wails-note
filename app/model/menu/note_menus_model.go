@@ -13,5 +13,5 @@ type NoteMenus struct {
 	Sort       int          `gorm:"column:sort" json:"sort"`
 	SortTime   int          `gorm:"column:sort_time" json:"sort_time"`
 	Children   any          `gorm:"-" json:"children,omitempty"`
-	NoteList   []note.Notes `gorm:"foreignKey:NoteId;references:MenuId" json:"notes"`
+	NoteList   []note.Notes `gorm:"foreignKey:MenuId;references:MenuId" json:"notes"`
 }

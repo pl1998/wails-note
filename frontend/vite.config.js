@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     vue(),
     prismjsPlugin({
-    languages: ['json','php','javascript','java','go','python'],
+    languages: ['json','php','javascript','java','go','python','shell','c#','c','rust','sql','bash'],
   }), 
   ElementPlus({
     // options
