@@ -22,7 +22,7 @@ func (*MenuHandler) Index(cxt *gin.Context) {
 	var menuList []menu.NoteMenus
 	model.DB.
 		Model(&menu.NoteMenus{}).
-		Preload("NoteList").
+		//Preload("NoteList").
 		Where("is_deleted =?", 0).
 		Order("sort desc").
 		Order("sort_time desc").
@@ -35,10 +35,12 @@ func (*MenuHandler) Index(cxt *gin.Context) {
 
 // Store create note menu
 func (*MenuHandler) Store(cxt *gin.Context) {
+	idDir := helpers.StringToInt(cxt.DefaultPostForm("is_dir", "0"))
 	params := requests.NoteMenuStoreForm{
-		Name:  cxt.PostForm("name"),
-		IsDir: helpers.StringToInt(cxt.DefaultPostForm("is_dir", "0")),
-		Pid:   uint64(helpers.StringToInt(cxt.DefaultPostForm("p_id", "0"))),
+		Name:    cxt.PostForm("name"),
+		IsDir:   idDir,
+		Pid:     uint64(helpers.StringToInt(cxt.DefaultPostForm("p_id", "0"))),
+		Content: cxt.DefaultPostForm("content", ""),
 	}
 	errs := validator.New().Struct(params)
 	if errs != nil {
@@ -49,6 +51,7 @@ func (*MenuHandler) Store(cxt *gin.Context) {
 	note_menu.PId = params.Pid
 	note_menu.Name = params.Name
 	note_menu.IsDir = params.IsDir
+	note_menu.Content = params.Content
 	note_menu.AddTime = time.Now().Unix()
 	if model.DB.Model(&menu.NoteMenus{}).Create(&note_menu).Error != nil {
 		response.ErrorResponse(http.StatusInternalServerError, "更新失败").ToJson(cxt)

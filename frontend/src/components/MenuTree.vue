@@ -1,35 +1,33 @@
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps,defineEmits } from 'vue';
 import { Moon, Sunny, FolderOpened, DocumentCopy } from '@element-plus/icons-vue'
-const menuList = defineProps([
-])
+const props = defineProps({
+    menuList: []
+})
+const emits = defineEmits(['changeMenus', 'isdelDocs'])
+function changeMenus(menus){
+    emits('changeMenus',menus)
+}
+
 </script>
 <template>
     <div class="custom-menu-tree">
-        <template v-for="(menus,key) in menuList">
-            <el-menu-item>
-                <el-sub-menu :index="`menu_key`+key">
-                    <template #title>
-                        <el-icon>
-                            <FolderOpened />
-                        </el-icon>{{ menus.name }}
-                    </template>
-                    <el-menu-item v-for="(note,key) in menus.notes" :index="`menu_key`+key">
-                        <el-icon>
-                            <DocumentCopy />
-                        </el-icon>{{ note.name }}
-                    </el-menu-item>
-                    <el-menu-item-group v-for="(menu,key) in menus.children">
-                        <el-menu-item index="{{menu.menu_id}}">
-                            <el-icon>
-                                <FolderOpened />
-                            </el-icon>{{ menu.name }}</el-menu-item>
-                        <el-menu-item :index="`note_key`+key" v-for="note in menu.notes"><el-icon>
-                                <DocumentCopy />
-                            </el-icon> {{ note.name }}</el-menu-item>
-                    </el-menu-item-group>
-                </el-sub-menu>
+        <template v-for="(menus, key) in props.menuList">
+
+            <el-sub-menu v-if="menus.is_dir == 1" :index="key">
+                <template #title>
+                    <el-icon>
+                        <FolderOpened />
+                    </el-icon>{{ menus.name }}
+                </template>
+                <MenuTree v-if="menus.children != null" :menuList="menus.children" />
+            </el-sub-menu>
+            <el-menu-item v-else :index="key" @click="changeMenus(menus)">
+                <el-icon>
+                    <DocumentCopy />
+                </el-icon>{{ menus.name }}
             </el-menu-item>
+
         </template>
     </div>
 </template>

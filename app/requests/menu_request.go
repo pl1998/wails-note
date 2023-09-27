@@ -1,9 +1,10 @@
 package requests
 
 type NoteMenuStoreForm struct {
-	Name  string `json:"name" validate:"required,min=2,max=20"`
-	Pid   uint64 `json:"p_id"`
-	IsDir int    `json:"is_dir"`
+	Name    string `json:"name" validate:"required,min=2,max=20"`
+	Pid     uint64 `json:"p_id"`
+	IsDir   int    `json:"is_dir"`
+	Content string `json:"content"`
 }
 
 type NoteMenuUpdateForm struct {

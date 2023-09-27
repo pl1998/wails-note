@@ -2,17 +2,13 @@
 import EditMarkdown from './components/EditMarkdown.vue'
 import MenuTree from './components/MenuTree.vue'
 import RightMenu from './components/menus/RightMenu.vue'
-import { contextMenu } from './components/menus/index'
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, watch, nextTick } from 'vue'
 import { Menu as IconMenu, Message, Setting } from '@element-plus/icons-vue'
 import { Moon, Sunny, FolderOpened, DocumentCopy, MoreFilled, Plus } from '@element-plus/icons-vue'
 import { store } from './store/index'
 import { getMenuList } from './api/menu'
-const item = {
-  date: '2016-05-02',
-  name: 'Tom',
-  address: 'No. 189, Grove St, Los Angeles',
-}
+
+
 const theme = computed({
   // getter
   get() {
@@ -23,58 +19,97 @@ const theme = computed({
     store.commit('setTheme', value == false ? 'dark' : 'light')
   }
 })
-
 const notes = computed(() => store.state.notes)
-const isShowDocs =ref(false)
+const isShowDocs = ref(false)
+watch(isShowDocs, (value, old) => {
+  console.log('watch更新' + value)
+
+})
+
 
 const openSetting = ref(false)
+
 
 const menuList = computed({
   // getter
   get() {
-    console.log('memnlist')
-    return  store.state.menuList
+    return store.state.menuList
   },
   // setter
   set(value) {
-    store.commit('setMenuList',value)
+    nextTick()
+    store.commit('setMenuList', value)
   }
 })
+watch(menuList, (value, old) => {
+  console.log('menuList watch更新' + value)
+  nextTick()
+})
+
+watch(notes, (value, old) => {
+  console.log('notes watch更新' + value)
+  nextTick()
+})
+
 
 const rightMenu = ref({
   x: 100,
   y: 100,
-  isShow: false
+  isShow: false,
+  menu_id: 0
 })
 
 onMounted(() => {
   getMenuList({})
+
 })
-function openMenu(event, item) {
+function openMenu(event, menu_id) {
+  event.preventDefault()
   this.rightMenu.x = event.clientX
   this.rightMenu.y = event.clientY
-  event.preventDefault()
   this.rightMenu.isShow = !this.rightMenu.isShow
+  this.rightMenu.menu_id = menu_id
+  console.log(this.rightMenu.isShow)
 }
-function viewDocs(item) {
-  this.isShowDocs = true
-  store.commit('setNote', item)
-  console.log(this.isShowDocs)
-  console.log(item)
+function viewDocs(menus) {
+  isShowDocs.value = true
+  store.commit('setNote', menus)
+  console.log('测试查看文章', menus)
+  nextTick()
+}
+const editDocs = (e) => {
+  isShowDocs.value = false
+  isShowDocs.value = true
+  store.commit('setNote', {
+    name: "",
+    menu_id: 0,
+    content: "",
+    note_id: 0,
+  })
+}
+function delDocs(id) {
+  store.commit('setNote', {})
+  store.commit('setIsShowDocs', false)
 }
 
 function downMenu(event) {
   event.preventDefault()
-  this.isShowDocs = false
+  this.rightMenu.isShow = false
+}
 
+
+const onUpdateMenus = (menus) => {
+  isShowDocs.value = true
+  store.commit('setNote', menus)
+  console.log('测试查看文章', menus, isShowDocs)
 }
 
 </script>
 
 <template>
-  <el-container class="layout-container">
+  <el-container class="layout-container" @click.left.native="downMenu($event)">
     <!-- 表头 -->
-    <el-header style="text-align: right; font-size: 12px">
+    <!-- <el-header style="text-align: right; font-size: 12px">
       <div class="theme">
         <el-tooltip :content="'Switch value: ' + theme" placement="top">
           <el-switch v-model="theme" class="mt-2" style="margin-left: 24px" inline-prompt :active-icon="Sunny"
@@ -87,45 +122,46 @@ function downMenu(event) {
         </el-icon>
         ✨✨✨
       </div>
-    </el-header>
+    </el-header> -->
     <!-- 菜单栏 -->
     <el-container>
       <div>
         <el-aside width="200px">
           <el-scrollbar>
-            <el-menu default-active="1">
-              <el-sub-menu :index="`menu_key`+key" v-for="(menus,key) in menuList"
-                @click.right.native="openMenu($event, menus.menu_id)"
+            <el-menu default-active="1" :index="`menu_key` + key" v-for="(menus, key) in menuList">
+              <el-sub-menu v-if="menus.is_dir == 1" @click.right.native="openMenu($event, menus.menu_id)"
                 @click.left.native="downMenu($event, menus.menu_id)">
                 <template #title>
                   <el-icon>
                     <FolderOpened />
                   </el-icon>{{ menus.name }}
                 </template>
-                <el-menu-item v-for="(note,key) in menus.notes" :index="`note_key`+key" @click="viewDocs(note)">
-                  <el-icon>
-                    <DocumentCopy />
-                  </el-icon>{{ note.name }}
-                </el-menu-item>
-                <MenuTree :menuList="menus.children == null ?? []" />
+                <MenuTree v-if="menus.children != null" :menuList="menus.children" @changeMenus="onUpdateMenus" />
               </el-sub-menu>
+              <el-menu-item v-else :index="key" @click="viewDocs(menus)"
+                @click.right.native="openMenu($event, menus.menu_id)">
+                <el-icon>
+                  <DocumentCopy />
+                </el-icon>{{ menus.name }}
+              </el-menu-item>
             </el-menu>
           </el-scrollbar>
         </el-aside>
       </div>
       <el-main>
-        <el-scrollbar>
-          <EditMarkdown v-bind="notes"  :is-show="isShowDocs" />
+        <el-scrollbar v-if="isShowDocs">
+          <EditMarkdown v-bind="notes" />
         </el-scrollbar>
       </el-main>
     </el-container>
 
 
     <!-- 设置弹窗 -->
-    <el-dialog v-model="openSetting" title="设置" width="70%"  align-center>
+    <el-dialog v-model="openSetting" title="设置" width="70%" align-center>
       <div style="height:600px;display:block"></div>
     </el-dialog>
-    <RightMenu :x="rightMenu.x" :y="rightMenu.y" :is-show="rightMenu.isShow" @isEditDocs="!isShowDocs" />
+    <RightMenu v-if="rightMenu.isShow" :x="rightMenu.x" :y="rightMenu.y" :menuId="rightMenu.menu_id"
+      :is-show="rightMenu.isShow" @addDocs="editDocs" />
 
   </el-container>
 </template>

@@ -10,7 +10,8 @@ export const store = createStore({
         name: 'name',
         content: '',
         menu_id: 1
-      }
+      },
+      isShowDocs: false,
     }
   },
   mutations: {
@@ -22,6 +23,9 @@ export const store = createStore({
     },
     setNote(state, notes) {
       state.notes = notes
+    },
+    setIsShowDocs(state, value) {
+      state.isShowDocs = value
     }
   }
 })

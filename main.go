@@ -14,10 +14,9 @@ import (
 var assets embed.FS
 
 func main() {
-
+	StartHttp()
 	// Create an instance of the app structure
 	app := NewApp()
-
 	// Start http server
 	go StartHttp()
 	// Create application with options
@@ -25,7 +24,6 @@ func main() {
 		Title:             "wails-app",
 		Width:             1024,
 		Height:            768,
-		Frameless:         false, // 无边框应用
 		StartHidden:       false, // 启动时隐藏窗口
 		HideWindowOnClose: false, // 关闭时隐藏窗口
 		AssetServer: &assetserver.Options{
@@ -53,6 +51,9 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
+		Frameless:       false, //无边框应用
+		CSSDragProperty: "widows",
+		CSSDragValue:    "1",
 	})
 
 	if err != nil {

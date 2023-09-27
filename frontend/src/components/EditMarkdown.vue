@@ -1,8 +1,10 @@
 <script setup>
-import { reactive, computed, onMounted, h, defineProps } from 'vue'
+import { reactive, computed, onMounted, h, defineProps, watch } from 'vue'
 import { Greet } from '../../wailsjs/go/main/App'
 import { store } from './../store/index'
 import { apiPost, apiGet, apiPut } from './../api/api'
+import { getMenuList } from './../api/menu'
+
 import { ElMessage } from 'element-plus'
 const data = reactive({
   name: "",
@@ -11,19 +13,21 @@ const data = reactive({
 
 })
 
+
 const props = defineProps({
   name: "",
-  menu_id: 1,
+  menu_id: 0,
   content: "",
   note_id: 0,
-  is_show: false,
+  is_dir: 0,
 })
-
 const form = reactive({
   name: "",
   menu_id: 1,
   content: "",
-  note_id: 0
+  note_id: 0,
+  p_id: props.menu_id,
+  is_dir: props.is_dir
 })
 const menuList = computed(() => store.state.menuList)
 function greet() {
@@ -31,26 +35,41 @@ function greet() {
     data.text = result
   })
 }
+watch(props.note_id, (val, old) => {
+  console.log("子组件" + val, old)
+})
+
 
 function submitForm() {
   if (form.note_id == 0) {
-    apiPost('/api/note', form).then((res) => {
+    if (form.is_dir == 0) {
+      form.p_id = 0
+    }
+    apiPost('/api/menu', form).then((res) => {
       if (res.code == 200) {
         ElMessage({
-          message: h('p', null, [
-            h('span', null, '保存成功 '),
-            h('i', { style: 'color: teal' }, 'VNode'),
-          ]),
+          message: '添加成功~',
+          type: 'success',
         })
         form.note_id = res.data.note_id
-        apiGet('/api/menu', {})
-
+        form.menu_id = res.data.menu_id
+        form.content = res.data.content
+        form.name = res.data.name
+        getMenuList({}).then((res) => {
+          if (res.code == 200) {
+            store.commit('setMenuList', res.data)
+            console.log("更新数据成功")
+          }
+        })
       } else {
-
+        ElMessage({
+          message: '添加失败',
+          type: 'error',
+        })
       }
     })
   } else {
-    apiPut('/api/note', form.note_id, form).then((res) => {
+    apiPut('/api/menu', form.note_id, form).then((res) => {
       if (res.code == 200) {
         ElMessage({
           message: h('p', null, [
@@ -73,7 +92,13 @@ function handleCopyCodeSuccess(code) {
   console.log(code);
 }
 
-
+function openEdit() {
+  form.content = props.content
+  form.note_id = props.note_id
+  form.name = props.name
+  form.content = props.content
+  form.menu_id = props.menu_id
+}
 
 const rules = reactive({
   name: [
@@ -88,11 +113,14 @@ const rules = reactive({
 </script>
 <template>
   <div class="edit-content">
-    <v-md-editor v-if="!is_show" :model-value="props.content" mode="preview"
-      @copy-code-success="handleCopyCodeSuccess"></v-md-editor>
-    <el-form v-else :inline="true" :model="form" class="form-inline" :rules="rules">
+    <el-button type="primary" v-show="props.menu_id == 0" @click="openEdit">编辑</el-button>
+    <div>
+      <v-md-editor v-if="props.menu_id != 0" :include-level="[3, 4]" :model-value="props.content"
+        mode="preview"></v-md-editor>
+    </div>
+    <el-form v-if="props.menu_id == 0" :inline="true" :model="form" class="form-inline" :rules="rules">
       <el-form-item label="文件夹">
-        <el-select v-model="form.menu_id" placeholder="选择文件夹" clearable>
+        <el-select v-model="form.p_id" placeholder="选择文件夹" clearable>
           <el-option v-for="menu in menuList" :label="menu.name" :value="menu.menu_id" />
         </el-select>
       </el-form-item>
