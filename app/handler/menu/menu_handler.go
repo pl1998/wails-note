@@ -65,8 +65,7 @@ func (*MenuHandler) Store(cxt *gin.Context) {
 // Delete menu
 func (*MenuHandler) Delete(cxt *gin.Context) {
 	id := handler.GetId(cxt)
-	var note_menu menu.NoteMenus
-	if result := model.DB.Model(&menu.NoteMenus{}).Where("menu_id=?", id).Find(&note_menu); result.RowsAffected == 0 {
+	if result := model.DB.Model(&menu.NoteMenus{}).Where("menu_id=?", id).Update("is_deleted", "1"); result.RowsAffected == 0 {
 		response.FailResponse(http.StatusInternalServerError, "删除失败！").WriteTo(cxt)
 		return
 	}

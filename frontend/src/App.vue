@@ -1,12 +1,14 @@
 <script setup>
 import EditMarkdown from './components/EditMarkdown.vue'
 import MenuTree from './components/MenuTree.vue'
+import CreateFile from './components/CreateFile.vue'
 import RightMenu from './components/menus/RightMenu.vue'
 import { ref, computed, reactive, onMounted, watch, nextTick } from 'vue'
 import { Menu as IconMenu, Message, Setting } from '@element-plus/icons-vue'
 import { Moon, Sunny, FolderOpened, DocumentCopy, MoreFilled, Plus } from '@element-plus/icons-vue'
 import { store } from './store/index'
-import { getMenuList } from './api/menu'
+import { getMenuList, deleleMenu } from './api/menu'
+
 
 
 const theme = computed({
@@ -28,7 +30,7 @@ watch(isShowDocs, (value, old) => {
 
 
 const openSetting = ref(false)
-
+const centerDialogVisible = ref(false)
 
 const menuList = computed({
   // getter
@@ -61,8 +63,10 @@ const rightMenu = ref({
 
 onMounted(() => {
   getMenuList({})
-
 })
+function createDocs() {
+  centerDialogVisible.value = true
+}
 function openMenu(event, menu_id) {
   event.preventDefault()
   this.rightMenu.x = event.clientX
@@ -98,12 +102,23 @@ function downMenu(event) {
 }
 
 
+const downCenterDialogVisible = () => {
+  centerDialogVisible.value = false
+  console.log(22222)
+}
+
 const onUpdateMenus = (menus) => {
   isShowDocs.value = true
   store.commit('setNote', menus)
   console.log('测试查看文章', menus, isShowDocs)
 }
 
+const delMenu = (value) => {
+  deleleMenu(value)
+}
+const addDir = () => {
+  centerDialogVisible.value = true
+}
 </script>
 
 <template>
@@ -120,13 +135,12 @@ const onUpdateMenus = (menus) => {
         <el-icon style="margin-right: 8px; margin-top: 1px" @click="openSetting = true">
           <setting />
         </el-icon>
-        ✨✨✨
       </div>
     </el-header> -->
     <!-- 菜单栏 -->
     <el-container>
       <div>
-        <el-aside width="200px">
+        <el-aside width="200px" v-if="menuList != null">
           <el-scrollbar>
             <el-menu default-active="1" :index="`menu_key` + key" v-for="(menus, key) in menuList">
               <el-sub-menu v-if="menus.is_dir == 1" @click.right.native="openMenu($event, menus.menu_id)"
@@ -147,6 +161,9 @@ const onUpdateMenus = (menus) => {
             </el-menu>
           </el-scrollbar>
         </el-aside>
+        <el-empty v-if="menuList == null">
+          <el-button type="primary" @click="createDocs">创建文档</el-button>
+        </el-empty>
       </div>
       <el-main>
         <el-scrollbar v-if="isShowDocs">
@@ -161,8 +178,8 @@ const onUpdateMenus = (menus) => {
       <div style="height:600px;display:block"></div>
     </el-dialog>
     <RightMenu v-if="rightMenu.isShow" :x="rightMenu.x" :y="rightMenu.y" :menuId="rightMenu.menu_id"
-      :is-show="rightMenu.isShow" @addDocs="editDocs" />
-
+      :is-show="rightMenu.isShow" @addDocs="editDocs" @delMenu="delMenu" @addDir="addDir" />
+    <CreateFile :centerDialogVisible="centerDialogVisible" @onSubmit="downCenterDialogVisible" />
   </el-container>
 </template>
 

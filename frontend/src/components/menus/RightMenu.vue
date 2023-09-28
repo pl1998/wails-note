@@ -20,7 +20,7 @@ const addDir = () => {
 }
 const delMenu = () => {
   console.log("delMenu",props.menuId)
-  emits('delMenu',true)
+  emits('delMenu',props.menuId)
 }
 </script>
 <template>
