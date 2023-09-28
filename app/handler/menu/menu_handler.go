@@ -76,10 +76,11 @@ func (*MenuHandler) Delete(cxt *gin.Context) {
 // Update menu
 func (*MenuHandler) Update(cxt *gin.Context) {
 	params := requests.NoteMenuUpdateForm{
-		Name:   cxt.PostForm("name"),
-		IsDir:  helpers.StringToInt(cxt.PostForm("is_dir")),
-		Pid:    uint64(helpers.StringToInt(cxt.PostForm("p_id"))),
-		MenuId: uint64(helpers.StringToInt(cxt.PostForm("menu_id"))),
+		Name:    cxt.PostForm("name"),
+		IsDir:   helpers.StringToInt(cxt.PostForm("is_dir")),
+		Pid:     uint64(helpers.StringToInt(cxt.PostForm("p_id"))),
+		MenuId:  uint64(helpers.StringToInt(cxt.PostForm("menu_id"))),
+		Content: cxt.DefaultPostForm("content", ""),
 	}
 	errs := validator.New().Struct(params)
 	if errs != nil {
@@ -90,6 +91,7 @@ func (*MenuHandler) Update(cxt *gin.Context) {
 	note_menu.PId = params.Pid
 	note_menu.Name = params.Name
 	note_menu.IsDir = params.IsDir
+	note_menu.Content = params.Content
 	note_menu.UpdateTime = time.Now().Unix()
 	if model.DB.Model(&menu.NoteMenus{}).Where("menu_id =? ", params.MenuId).Updates(&note_menu).Error != nil {
 		response.ErrorResponse(http.StatusInternalServerError, "更新失败").ToJson(cxt)

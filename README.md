@@ -18,5 +18,10 @@ to this in your browser, and you can call your Go code from devtools.
 
 To build a redistributable, production mode package, use `wails build`.
 
-## vue3
+## Vue3
 https://blog.csdn.net/acm_cn1234567890/article/details/124553278
+
+## Think Project
+ * [md-editor-v3- 一款好用的markdown编辑器](https://github.com/imzbf/md-editor-v3/blob/develop/README-CN.md)
+ * [vueUse- 主题扩展](https://vueuse.org/core/useDark/)
+ * [element-ui- 组件库](https://element-plus.org/zh-CN)

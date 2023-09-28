@@ -44,7 +44,7 @@ func StartHttp() {
 	r.GET("/api/menu", menu_handler.Index)
 	r.POST("/api/menu", menu_handler.Store)
 	r.DELETE("/api/menu/:id", menu_handler.Delete)
-	r.PUT("/api/update", menu_handler.Update)
+	r.PUT("/api/menu/:id", menu_handler.Update)
 
 	r.GET("/api/note/:id", note_handler.Index)
 	r.POST("/api/note", note_handler.Store)

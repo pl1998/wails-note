@@ -1,15 +1,16 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue'
-import { FolderAdd, Sunny, Document, FolderDelete } from '@element-plus/icons-vue'
+import { FolderAdd, Edit, Document, FolderDelete } from '@element-plus/icons-vue'
 import { store } from './../../store/index'
 const props = defineProps({
   x: 100,
   y: 100,
   isShow: false,
-  menuId:0
+  menuId:0,
+  menus:{}
 })
 
-const emits = defineEmits(['addDocs', 'addDir','delMenu'])
+const emits = defineEmits(['addDocs', 'addDir','delMenu','editDocs'])
 const addDocs = () => {
   console.log("addDocs",props.menuId)
   emits('addDocs')
@@ -21,6 +22,10 @@ const addDir = () => {
 const delMenu = () => {
   console.log("delMenu",props.menuId)
   emits('delMenu',props.menuId)
+}
+const editDocs = () => {
+  console.log("editDocs",props.menuId)
+  emits('editDocs',props.menus)
 }
 </script>
 <template>
@@ -34,6 +39,9 @@ const delMenu = () => {
     <div class="text item" @click="addDir"> <el-icon>
         <FolderAdd />
       </el-icon> 添加子目录</div>
+      <div class="text item" @click="editDocs"> <el-icon>
+        <el-icon><Edit /></el-icon>
+      </el-icon> 编辑</div>
     <div class="text item" @click="delMenu"> <el-icon>
         <FolderDelete />
       </el-icon> 删除</div>
