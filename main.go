@@ -14,7 +14,6 @@ import (
 var assets embed.FS
 
 func main() {
-	StartHttp()
 	// Create an instance of the app structure
 	app := NewApp()
 	// Start http server
