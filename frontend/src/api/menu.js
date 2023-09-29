@@ -1,5 +1,5 @@
 import { store } from './../store/index'
-import { apiGet, apiPost, apiDel } from './../api/api'
+import { apiGet, apiPost, apiDel, apiPut } from './../api/api'
 import { ElMessage } from 'element-plus'
 export function getMenuList(data) {
     apiGet('/api/menu', data).then((res) => {
@@ -9,24 +9,24 @@ export function getMenuList(data) {
     })
 }
 export function addMenu(data) {
-    apiPost('/api/menu', data)
-        .then((res) => {
-            if (res.code == 200) {
-                ElMessage({
-                    showClose: true,
-                    message: '创建成功~',
-                    type: 'success',
-                })
-                getMenuList({})
-            }
-        })
+    return apiPost('/api/menu', data)
 }
 
-export function addNote(data) {
-    apiPost('/api/note', data)
+
+export function updateMenu(data) {
+    apiPut('/api/menu',data.menu_id, data)
         .then((res) => {
             if (res.code == 200) {
                 getMenuList({})
+                ElMessage({
+                    message: '保存成功~',
+                    type: 'success'
+                })
+            } else {
+                ElMessage({
+                    message: '保存失败~',
+                    type: 'error'
+                })
             }
         })
 }

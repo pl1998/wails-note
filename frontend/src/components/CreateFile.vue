@@ -1,13 +1,26 @@
 
 <script  setup>
 import { reactive, defineEmits, defineProps } from 'vue'
-import { addMenu } from './../api/menu'
+import { addMenu,getMenuList } from './../api/menu'
 const props = defineProps({
     centerDialogVisible: false
 })
 const emits = defineEmits(['onSubmit'])
 function onSubmit() {
-    addMenu(form)
+    addMenu(form).then((res) => {
+        if (res.code == 200) {
+            getMenuList({})
+            ElMessage({
+                message: '创建成功~',
+                type: 'success'
+            })
+        } else {
+            ElMessage({
+                message: '创建失败~',
+                type: 'error'
+            })
+        }
+    })
     emits('onSubmit')
 }
 

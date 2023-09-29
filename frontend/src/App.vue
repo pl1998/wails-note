@@ -22,19 +22,14 @@ const notes = computed(() => store.state.notes ?? {
 })
 const isShowDocs = ref(false)
 const isEditDocs = ref(false)
-watch(isShowDocs, (value, old) => {
-  console.log('watch更新' + value)
-
-})
-
-
 const openSetting = ref(false)
 const centerDialogVisible = ref(false)
+const isLeftMenu = ref(false)
 
 const menuList = computed({
   // getter
   get() {
-    return store.state.menuList
+    return store.state.menuList ?? []
   },
   // setter
   set(value) {
@@ -46,12 +41,6 @@ watch(menuList, (value, old) => {
   console.log('menuList watch更新' + value)
   nextTick()
 })
-
-watch(notes, (value, old) => {
-  console.log('notes watch更新' + value)
-  nextTick()
-})
-const isCollapse = ref(true)
 
 const rightMenu = ref({
   x: 100,
@@ -71,29 +60,34 @@ function openMenu(event, menu) {
   event.preventDefault()
   this.rightMenu.x = event.clientX
   this.rightMenu.y = event.clientY
-  this.rightMenu.isShow = !this.rightMenu.isShow
+  isLeftMenu.value = true
   this.rightMenu.menu_id = menu.menu_id
   this.rightMenu.menus = menu
-  console.log(this.rightMenu.isShow)
 }
 function viewDocs(menus) {
+  console.log('viewDocs')
   isEditDocs.value = false
   isShowDocs.value = false
   isShowDocs.value = true
+  openIsLeftMenu()
   store.commit('setNote', menus)
-  console.log('测试查看文章', menus)
-  nextTick()
 }
 const addDocs = (e) => {
+
+  console.log(e.menu_id)
   isShowDocs.value = false
   isShowDocs.value = true
-  rightMenu.isShow = false
+  openIsLeftMenu()
   store.commit('setNote', {
     name: "",
     menu_id: 0,
     content: "",
     note_id: 0,
+    p_id:e.menu_id,
+    is_dir:0,
+    menus:e
   })
+  isEditDocs.value = true
 }
 function delDocs(id) {
   store.commit('setNote', {})
@@ -101,35 +95,41 @@ function delDocs(id) {
 }
 
 function downMenu(event) {
-  event.preventDefault()
-  rightMenu.isShow.value = false
+  isLeftMenu.value = false
+
 }
 
+function openIsLeftMenu() {
+  event.preventDefault()
+  isLeftMenu.value = !isLeftMenu.value
+  console.log(isLeftMenu.value)
+}
 
 const downCenterDialogVisible = () => {
   centerDialogVisible.value = false
-  console.log(22222)
 }
 
 const onUpdateMenus = (menus) => {
   isShowDocs.value = true
-
   store.commit('setNote', menus)
-  console.log('测试查看文章', menus, isShowDocs)
 }
 
 const delMenu = (value) => {
+  openIsLeftMenu()
   deleleMenu(value)
 }
 const addDir = () => {
   centerDialogVisible.value = true
+  openIsLeftMenu()
 }
 const editDocs = (menus) => {
   isShowDocs.value = false
   isShowDocs.value = true
   isEditDocs.value = true
   rightMenu.menus = menus
-  rightMenu.isShow = false
+  console.log(menus)
+  store.commit('setNote', menus)
+  openIsLeftMenu()
 }
 
 </script>
@@ -173,7 +173,7 @@ const editDocs = (menus) => {
             </el-menu>
           </el-scrollbar>
         </el-aside>
-        <el-empty v-if="menuList == null">
+        <el-empty v-if="menuList.length == 0">
           <el-button type="primary" @click="createDocs">创建文档</el-button>
         </el-empty>
       </div>
@@ -190,9 +190,8 @@ const editDocs = (menus) => {
     <el-dialog v-model="openSetting" title="设置" width="70%" align-center>
       <div style="height:600px;display:block"></div>
     </el-dialog>
-    <RightMenu v-if="rightMenu.isShow" :x="rightMenu.x" :y="rightMenu.y" :menus="rightMenu.menus"
-      :menuId="rightMenu.menu_id" :is-show="rightMenu.isShow" @addDocs="addDocs" @delMenu="delMenu" @addDir="addDir"
-      @editDocs="editDocs" />
+    <RightMenu v-if="isLeftMenu" :x="rightMenu.x" :y="rightMenu.y" :menus="rightMenu.menus" :menuId="rightMenu.menu_id"
+      :is-show="isLeftMenu" @addDocs="addDocs" @delMenu="delMenu" @addDir="addDir" @editDocs="editDocs" />
     <CreateFile :centerDialogVisible="centerDialogVisible" @onSubmit="downCenterDialogVisible" />
   </el-container>
 </template>

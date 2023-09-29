@@ -13,7 +13,7 @@ const props = defineProps({
 const emits = defineEmits(['addDocs', 'addDir','delMenu','editDocs'])
 const addDocs = () => {
   console.log("addDocs",props.menuId)
-  emits('addDocs')
+  emits('addDocs',props.menus)
 }
 const addDir = () => {
   console.log("addDir",props.menuId)

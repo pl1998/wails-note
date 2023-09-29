@@ -3,13 +3,13 @@
 import { ref, defineProps, reactive, computed, watch } from 'vue';
 import { MdEditor, MdPreview, MdCatalog } from 'md-editor-v3';
 import { store } from './../store/index'
-import { apiPost, apiGet, apiPut } from './../api/api'
-import { getMenuList } from './../api/menu'
+import { getMenuList, addMenu, updateMenu } from './../api/menu'
 import 'md-editor-v3/lib/preview.css';
 import { ElMessage } from 'element-plus'
 const props = defineProps({
     name: "",
     menu_id: 0,
+    p_id: 0,
     content: "# Hello Editor",
     note_id: 0,
     is_dir: 0,
@@ -27,16 +27,14 @@ const form = reactive({
     menu_id: props.menu_id,
     content: props.content ?? "# hello world",
     note_id: props.note_id ?? 0,
-    p_id: props.menu_id,
+    p_id: props.p_id,
     is_dir: props.is_dir
 })
 
 const menuList = computed(() => store.state.menuList ?? [])
 import { useDark } from '@vueuse/core'
 const isDark = useDark()
-watch(props.note_id, (val, old) => {
-    console.log("子组件" + val, old)
-})
+
 const rules = reactive({
     name: [
         { required: true, message: '请输入文章名称', trigger: 'blur' },
@@ -48,11 +46,11 @@ const rules = reactive({
 })
 
 function onSubmit() {
-    if (form.menu_id == 0 || form.menu_id == undefined || form.menu_id== null) {
+    if (form.menu_id == 0 || form.menu_id == undefined || form.menu_id == null) {
         if (form.is_dir == 0) {
             form.p_id = 0
         }
-        apiPost('/api/menu', form).then((res) => {
+        addMenu(form).then((res) => {
             if (res.code == 200) {
                 ElMessage({
                     message: '添加成功~',
@@ -76,21 +74,7 @@ function onSubmit() {
             }
         })
     } else {
-        apiPut('/api/menu', form.menu_id, form).then((res) => {
-            if (res.code == 200) {
-                ElMessage({
-                    message: h('p', null, [
-                        h('span', null, '保存成功 '),
-                        h('i', { style: 'color: teal' }, 'VNode'),
-                    ]),
-                })
-                form.note_id = res.data.note_id
-                apiGet('/api/menu', {})
-
-            } else {
-
-            }
-        })
+        updateMenu(form)
     }
 
 }
@@ -101,10 +85,11 @@ function onSubmit() {
     <!-- 编辑 -->
     <div class="edit-content">
 
-        <el-form v-if="props.isEditDocs || props.menu_id==0" :inline="true" :model="form" class="form-inline" :rules="rules">
+        <el-form v-if="props.isEditDocs || props.menu_id == 0" :inline="true" :model="form" class="form-inline"
+            :rules="rules">
             <el-form-item label="文件夹">
                 <el-select v-model="form.p_id" placeholder="选择文件夹" clearable>
-                    <el-option v-for="menu in menuList" :label="menu.name" :value="menu.menu_id" />
+                    <el-option v-for="menu in menuList" :label="menu.name" :value="menu.menu_id" :selected="menu.menu_id==form.p_id ? `selected` : ``"   />
                 </el-select>
             </el-form-item>
             <el-form-item label="文章名称">
@@ -112,7 +97,7 @@ function onSubmit() {
             </el-form-item>
             <MdEditor :preview="isPreview" v-model="form.content" :theme="!isDark ? `light` : `dark`" />
 
-            <el-button type="primary" @click="onSubmit">{{props.isEditDocs ? 'Save' :'Create'}}</el-button>
+            <el-button type="primary" @click="onSubmit">{{ props.isEditDocs ? 'Save' : 'Create' }}</el-button>
         </el-form>
 
         <!-- 预览 -->
@@ -172,4 +157,5 @@ function onSubmit() {
 
 .el-main {
     --el-main-padding: 0px !important;
-}</style>
+}
+</style>
