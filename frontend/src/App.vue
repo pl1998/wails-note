@@ -1,16 +1,14 @@
 <script setup>
-import EditMarkdown from './components/EditMarkdown.vue'
 import MdEditorV3 from './components/MdEditorV3.vue'
 import MenuTree from './components/MenuTree.vue'
 import CreateFile from './components/CreateFile.vue'
 import RightMenu from './components/menus/RightMenu.vue'
-import { ref, computed, reactive, onMounted, watch, nextTick } from 'vue'
-import { Menu as IconMenu, Message, Setting } from '@element-plus/icons-vue'
-import { Moon, Sunny, FolderOpened, DocumentCopy, MoreFilled, Plus } from '@element-plus/icons-vue'
+import { ref, onMounted, watch, nextTick ,computed} from 'vue'
+import {  Setting } from '@element-plus/icons-vue'
+import { Moon, Sunny, FolderOpened, DocumentCopy } from '@element-plus/icons-vue'
 import { store } from './store/index'
 import { getMenuList, deleleMenu } from './api/menu'
 import { useDark, useToggle } from '@vueuse/core'
-import { ElMessage } from 'element-plus'
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const notes = computed(() => store.state.notes ?? {

@@ -2,6 +2,7 @@
 <script  setup>
 import { reactive, defineEmits, defineProps } from 'vue'
 import { addMenu,getMenuList } from './../api/menu'
+import { ElMessage } from 'element-plus'
 const props = defineProps({
     centerDialogVisible: false
 })

@@ -53,6 +53,9 @@ func main() {
 		Frameless:       false, //无边框应用
 		CSSDragProperty: "widows",
 		CSSDragValue:    "1",
+		Debug: options.Debug{
+			OpenInspectorOnStartup: true,
+		},
 	})
 
 	if err != nil {
