@@ -29,7 +29,7 @@ const editDocs = () => {
 }
 </script>
 <template>
-  <el-card v-if="props.isShow" class="box-card" style="transform" :style="{
+  <el-card v-if="props.isShow" class="box-card" :style="{
     left: props.x + 'px',
     top: props.y + 'px',
   }">

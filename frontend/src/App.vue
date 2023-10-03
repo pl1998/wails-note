@@ -5,7 +5,7 @@ import CreateFile from './components/CreateFile.vue'
 import RightMenu from './components/menus/RightMenu.vue'
 import { ref, onMounted, watch, nextTick ,computed} from 'vue'
 import {  Setting } from '@element-plus/icons-vue'
-import { Moon, Sunny, FolderOpened, DocumentCopy } from '@element-plus/icons-vue'
+import { Moon, Sunny, FolderOpened, DocumentCopy,MoreFilled } from '@element-plus/icons-vue'
 import { store } from './store/index'
 import { getMenuList, deleleMenu } from './api/menu'
 import { useDark, useToggle } from '@vueuse/core'
@@ -54,6 +54,19 @@ onMounted(() => {
 function createDocs() {
   centerDialogVisible.value = true
 }
+
+function clickMenu(event,menu) {
+  // console.log(event)
+  event.preventDefault()
+  this.rightMenu.x = event.clientX
+  this.rightMenu.y = event.clientY
+  isLeftMenu.value = true
+  this.rightMenu.menu_id = menu.menu_id
+  this.rightMenu.menus = menu
+  this.rightMenu.isShow = true
+  console.log(this.rightMenu)
+}
+
 function openMenu(event, menu) {
   event.preventDefault()
   this.rightMenu.x = event.clientX
@@ -137,9 +150,9 @@ const editDocs = (menus) => {
     <!-- 表头 -->
     <el-header style="text-align: right; font-size: 12px">
       <div class="theme">
-        <el-switch @click="!isDark" v-model="isDark" class="mt-2" size="large"
-          style="--el-switch-off-color: #73767a;--el-switch-on-color: #73767a" inline-prompt :active-icon="Sunny"
-          :inactive-icon="Moon" />
+        <el-switch v-model="isDark" :active-icon="Sunny" :inactive-icon="Moon" class="mt-2"
+          inline-prompt size="large" style="--el-switch-off-color: #73767a;--el-switch-on-color: #73767a"
+          @click="!isDark" />
       </div>
       <div class="toolbar">
         <el-icon style="margin-right: 8px; margin-top: 1px" @click="openSetting = true">
@@ -150,15 +163,20 @@ const editDocs = (menus) => {
     <!-- 菜单栏 -->
     <el-container>
       <div>
-        <el-aside width="200px" v-if="menuList != null">
+        <el-aside v-if="menuList != null" width="200px">
           <el-scrollbar>
             <el-menu v-for="(menus, key) in menuList">
-              <el-sub-menu :index="`menu` + key" v-if="menus.is_dir == 1" @click.right.native="openMenu($event, menus)"
+              <el-sub-menu v-if="menus.is_dir == 1" :index="`menu` + key" @click.right.native="openMenu($event, menus)"
                 @click.left.native="downMenu($event, menus.menu_id)">
                 <template #title>
                   <el-icon>
                     <FolderOpened />
                   </el-icon>{{ menus.name }}
+                 <div style="display: flex;justify-content: flex-end;height: 100%;width: 100%">
+                   <el-icon @click="clickMenu($event,menus)" style="height: 100%">
+                     <MoreFilled />
+                   </el-icon>
+                 </div>
                 </template>
                 <MenuTree v-if="menus.children != null" :menuList="menus.children" @changeMenus="onUpdateMenus" />
               </el-sub-menu>
@@ -179,17 +197,17 @@ const editDocs = (menus) => {
 
         <el-scrollbar v-if="isShowDocs">
           <!-- <EditMarkdown v-bind="notes" /> -->
-          <MdEditorV3 v-bind="notes" :isEditDocs="isEditDocs" />
+          <MdEditorV3 :isEditDocs="isEditDocs" v-bind="notes" />
 
         </el-scrollbar>
       </el-main>
     </el-container>
     <!-- 设置弹窗 -->
-    <el-dialog v-model="openSetting" title="设置" width="70%" align-center>
+    <el-dialog v-model="openSetting" align-center title="设置" width="70%">
       <div style="height:600px;display:block"></div>
     </el-dialog>
-    <RightMenu v-if="isLeftMenu" :x="rightMenu.x" :y="rightMenu.y" :menus="rightMenu.menus" :menuId="rightMenu.menu_id"
-      :is-show="isLeftMenu" @addDocs="addDocs" @delMenu="delMenu" @addDir="addDir" @editDocs="editDocs" />
+    <RightMenu v-if="isLeftMenu" :is-show="isLeftMenu" :menuId="rightMenu.menu_id" :menus="rightMenu.menus" :x="rightMenu.x"
+      :y="rightMenu.y" @addDir="addDir" @addDocs="addDocs" @delMenu="delMenu" @editDocs="editDocs" />
     <CreateFile :centerDialogVisible="centerDialogVisible" @onSubmit="downCenterDialogVisible" />
   </el-container>
 </template>

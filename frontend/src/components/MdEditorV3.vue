@@ -46,7 +46,7 @@ const rules = reactive({
 })
 
 function onSubmit() {
-    if (form.menu_id == 0 || form.menu_id == undefined || form.menu_id == null) {
+    if (form.menu_id === 0 || form.menu_id === undefined || form.menu_id === null) {
         if (form.is_dir == 0) {
             form.p_id = 0
         }
@@ -104,7 +104,7 @@ function onSubmit() {
         <div v-else>
             <div class="common-layout">
                 <el-container>
-                    <el-aside width="200px;">
+                    <el-aside width="160px;">
                         <MdCatalog :editorId="id" :modelValue="props.content" :theme="!isDark ? `light` : `dark`" />
                     </el-aside>
                     <el-main>
