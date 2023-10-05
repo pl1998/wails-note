@@ -16,8 +16,8 @@ const addDocs = () => {
   emits('addDocs',props.menus)
 }
 const addDir = () => {
-  console.log("addDir",props.menuId)
-  emits('addDir',true)
+  console.log("addDir",props)
+  emits('addDir',props.menuId)
 }
 const delMenu = () => {
   console.log("delMenu",props.menuId)

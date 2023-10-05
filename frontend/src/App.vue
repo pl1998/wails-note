@@ -5,7 +5,7 @@ import CreateFile from './components/CreateFile.vue'
 import RightMenu from './components/menus/RightMenu.vue'
 import { ref, onMounted, watch, nextTick ,computed} from 'vue'
 import {  Setting } from '@element-plus/icons-vue'
-import { Moon, Sunny, FolderOpened, DocumentCopy } from '@element-plus/icons-vue'
+import { Moon, Sunny, FolderOpened, DocumentCopy,MoreFilled } from '@element-plus/icons-vue'
 import { store } from './store/index'
 import { getMenuList, deleleMenu } from './api/menu'
 import { useDark, useToggle } from '@vueuse/core'
@@ -23,6 +23,9 @@ const isEditDocs = ref(false)
 const openSetting = ref(false)
 const centerDialogVisible = ref(false)
 const isLeftMenu = ref(false)
+const createDir = ref({
+  "p_id":0
+})
 
 const menuList = computed({
   // getter
@@ -58,12 +61,11 @@ function openMenu(event, menu) {
   event.preventDefault()
   this.rightMenu.x = event.clientX
   this.rightMenu.y = event.clientY
-  isLeftMenu.value = true
+  isLeftMenu.value = !isLeftMenu.value
   this.rightMenu.menu_id = menu.menu_id
   this.rightMenu.menus = menu
 }
 function viewDocs(menus) {
-  console.log('viewDocs')
   isEditDocs.value = false
   isShowDocs.value = false
   isShowDocs.value = true
@@ -94,13 +96,11 @@ function delDocs(id) {
 
 function downMenu(event) {
   isLeftMenu.value = false
-
 }
 
 function openIsLeftMenu() {
   event.preventDefault()
   isLeftMenu.value = !isLeftMenu.value
-  console.log(isLeftMenu.value)
 }
 
 const downCenterDialogVisible = () => {
@@ -110,14 +110,17 @@ const downCenterDialogVisible = () => {
 const onUpdateMenus = (menus) => {
   isShowDocs.value = true
   store.commit('setNote', menus)
+  console.log('onUpdateMenus')
 }
 
 const delMenu = (value) => {
   openIsLeftMenu()
   deleleMenu(value)
 }
-const addDir = () => {
+const addDir = (menuId) => {
+  createDir.p_id = menuId
   centerDialogVisible.value = true
+  console.log('测试',createDir.p_id)
   openIsLeftMenu()
 }
 const editDocs = (menus) => {
@@ -125,7 +128,6 @@ const editDocs = (menus) => {
   isShowDocs.value = true
   isEditDocs.value = true
   rightMenu.menus = menus
-  console.log(menus)
   store.commit('setNote', menus)
   openIsLeftMenu()
 }
@@ -133,7 +135,7 @@ const editDocs = (menus) => {
 </script>
 
 <template>
-  <el-container class="layout-container" @click.left.native="downMenu($event)">
+  <el-container class="layout-container" @click.left.native="downMenu($event, menus)">
     <!-- 表头 -->
     <el-header style="text-align: right; font-size: 12px">
       <div class="theme">
@@ -142,9 +144,7 @@ const editDocs = (menus) => {
           :inactive-icon="Moon" />
       </div>
       <div class="toolbar">
-        <el-icon style="margin-right: 8px; margin-top: 1px" @click="openSetting = true">
-          <setting />
-        </el-icon>
+        <el-icon style="margin-right: 8px; margin-top: 1px" @click="openSetting = true" ><Setting /></el-icon>
       </div>
     </el-header>
     <!-- 菜单栏 -->
@@ -153,14 +153,18 @@ const editDocs = (menus) => {
         <el-aside width="200px" v-if="menuList != null">
           <el-scrollbar>
             <el-menu v-for="(menus, key) in menuList">
-              <el-sub-menu :index="`menu` + key" v-if="menus.is_dir == 1" @click.right.native="openMenu($event, menus)"
-                @click.left.native="downMenu($event, menus.menu_id)">
+              <el-sub-menu :index="`menu` + key" v-if="menus.is_dir == 1" @click.right.native="openMenu($event, menus)">
                 <template #title>
                   <el-icon>
                     <FolderOpened />
                   </el-icon>{{ menus.name }}
+<!--                  <div style="display: flex;justify-content: flex-end;height: 100%;width: 100%">-->
+<!--                    <el-icon @click="openMenu($event,menus)" style="height: 100%">-->
+<!--                      <MoreFilled />-->
+<!--                    </el-icon>-->
+<!--                  </div>-->
                 </template>
-                <MenuTree v-if="menus.children != null" :menuList="menus.children" @changeMenus="onUpdateMenus" />
+                <MenuTree v-if="menus.children != null" :isShowDocs="isShowDocs" :menuList="menus.children" @changeMenus="onUpdateMenus" />
               </el-sub-menu>
               <el-menu-item v-else :index="`menu` + key" @click="viewDocs(menus)"
                 @click.right.native="openMenu($event, menus)">
@@ -190,7 +194,7 @@ const editDocs = (menus) => {
     </el-dialog>
     <RightMenu v-if="isLeftMenu" :x="rightMenu.x" :y="rightMenu.y" :menus="rightMenu.menus" :menuId="rightMenu.menu_id"
       :is-show="isLeftMenu" @addDocs="addDocs" @delMenu="delMenu" @addDir="addDir" @editDocs="editDocs" />
-    <CreateFile :centerDialogVisible="centerDialogVisible" @onSubmit="downCenterDialogVisible" />
+    <CreateFile v-if="centerDialogVisible" :centerDialogVisible="centerDialogVisible" @onSubmit="downCenterDialogVisible" :pId="rightMenu.menu_id" />
   </el-container>
 </template>
 
@@ -233,6 +237,10 @@ const editDocs = (menus) => {
 
 .layout-container .theme .el-switch.is-checked .el-switch__core {}
 
-.el-aside .el-scrollbar__view .el-scrollbar__view ui .el-sub-menu__title {}
+.el-aside .el-scrollbar__view .el-scrollbar__view ui .el-sub-menu__title {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
 </style>
 

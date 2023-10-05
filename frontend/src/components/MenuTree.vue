@@ -1,14 +1,20 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue';
 import { FolderOpened, DocumentCopy } from '@element-plus/icons-vue'
+import {store} from "../store/index.js";
 const props = defineProps({
-    menuList: [] | undefined
+    menuList: [] | undefined,
+  isShowDocs:false
 })
 const emits = defineEmits(['changeMenus', 'isdelDocs'])
 function changeMenus(menus) {
     emits('changeMenus', menus)
+    console.log('选中')
 }
-
+const onUpdateMenus = (menus) => {
+  props.isShowDocs = true
+  store.commit('setNote', menus)
+}
 </script>
 <template>
     <div class="custom-menu-tree">
@@ -19,7 +25,7 @@ function changeMenus(menus) {
                         <FolderOpened />
                     </el-icon>{{ menus.name }}
                 </template>
-                <MenuTree v-if="menus.children != null" :menuList="menus.children" />
+                <MenuTree v-if="menus.children != null" :menuList="menus.children" @changeMenus="onUpdateMenus"  :isShowDocs="props.isShowDocs "/>
             </el-sub-menu>
             <el-menu-item v-else :index="`sub_menu`+key" @click="changeMenus(menus)">
                 <el-icon>

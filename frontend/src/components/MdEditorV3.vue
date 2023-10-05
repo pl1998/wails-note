@@ -3,6 +3,7 @@
 import { ref, defineProps, reactive, computed, watch } from 'vue';
 import { MdEditor, MdPreview, MdCatalog } from 'md-editor-v3';
 import { store } from './../store/index'
+import { getDirTree } from './../library/func'
 import { getMenuList, addMenu, updateMenu } from './../api/menu'
 import 'md-editor-v3/lib/preview.css';
 import { ElMessage } from 'element-plus'
@@ -21,17 +22,26 @@ const id = 'preview-only';
 const text = ref('# Hello Editor');
 const scrollElement = document.documentElement;
 const isPreview = ref(false)
+const options = ref({
+  expandTrigger: 'click' | 'hover',
+  multiple: false,
+  checkStrictly: true,
+  value: 'menu_id',
+  label: 'name'
+})
 
 const form = reactive({
     name: props.name,
     menu_id: props.menu_id,
     content: props.content ?? "# hello world",
     note_id: props.note_id ?? 0,
-    p_id: props.p_id,
+    p_id: props.menu_id,
     is_dir: props.is_dir
 })
 
-const menuList = computed(() => store.state.menuList ?? [])
+const menuList = computed(() => {
+     return getDirTree(store.state.menuList ?? [])
+})
 import { useDark } from '@vueuse/core'
 const isDark = useDark()
 
@@ -44,12 +54,13 @@ const rules = reactive({
         { required: true, message: '请输入文章名称', trigger: 'blur' },
     ]
 })
-
+function  changeForm(data){
+  form.p_id = data.at(data.length-1)
+  console.log(form.p_id)
+}
 function onSubmit() {
     if (form.menu_id == 0 || form.menu_id == undefined || form.menu_id == null) {
-        if (form.is_dir == 0) {
-            form.p_id = 0
-        }
+
         addMenu(form).then((res) => {
             if (res.code == 200) {
                 ElMessage({
@@ -84,13 +95,13 @@ function onSubmit() {
 <template>
     <!-- 编辑 -->
     <div class="edit-content">
-
         <el-form v-if="props.isEditDocs || props.menu_id == 0" :inline="true" :model="form" class="form-inline"
             :rules="rules">
             <el-form-item label="文件夹">
-                <el-select v-model="form.p_id" placeholder="选择文件夹" clearable>
-                    <el-option v-for="menu in menuList" :label="menu.name" :value="menu.menu_id" :selected="menu.menu_id==form.p_id ? `selected` : ``"   />
-                </el-select>
+              <el-cascader :options="menuList" :show-all-levels="false" v-model="form.p_id" :props="options" @change="changeForm"  />
+<!--                <el-select v-model="form.p_id" placeholder="选择文件夹" clearable>-->
+<!--                    <el-option v-for="menu in menuList" :label="menu.name" :value="menu.menu_id" :selected="menu.menu_id==form.p_id ? `selected` : ``"   />-->
+<!--                </el-select>-->
             </el-form-item>
             <el-form-item label="文章名称">
                 <el-input v-model="form.name" placeholder="文章名称" clearable />

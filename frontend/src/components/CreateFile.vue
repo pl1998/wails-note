@@ -4,10 +4,22 @@ import { reactive, defineEmits, defineProps } from 'vue'
 import { addMenu,getMenuList } from './../api/menu'
 import { ElMessage } from 'element-plus'
 const props = defineProps({
-    centerDialogVisible: false
+    centerDialogVisible: false,
+    pId:0
 })
+
+const form = reactive({
+  name: "",
+  p_id: props.pId,
+  is_dir: 1,
+  content: ""
+})
+
 const emits = defineEmits(['onSubmit'])
 function onSubmit() {
+  console.log('提交')
+  console.log(props.pId)
+  console.log(form.p_id)
     addMenu(form).then((res) => {
         if (res.code == 200) {
             getMenuList({})
@@ -24,13 +36,6 @@ function onSubmit() {
     })
     emits('onSubmit')
 }
-
-const form = reactive({
-    name: "",
-    p_id: 0,
-    is_dir: 1,
-    content: ""
-})
 
 </script>
 <template>
