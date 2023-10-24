@@ -2,16 +2,11 @@
 import EditMarkdown from './components/EditMarkdown.vue'
 import MenuTree from './components/MenuTree.vue'
 import RightMenu from './components/menus/RightMenu.vue'
-import { contextMenu } from './components/menus/index'
 import { ref, computed, reactive, onMounted } from 'vue'
-import { Menu as IconMenu, Message, Setting } from '@element-plus/icons-vue'
+import { Setting } from '@element-plus/icons-vue'
 import {
   Moon,
   Sunny,
-  FolderOpened,
-  DocumentCopy,
-  MoreFilled,
-  Plus,
 } from '@element-plus/icons-vue'
 import { store } from './store/index'
 import { getMenuList } from './api/menu'
@@ -42,7 +37,7 @@ const menuList = computed({
   },
 })
 
-const rightMenu = ref({
+const rightMenu = reactive({
   x: 100,
   y: 100,
   isShow: false,
@@ -50,31 +45,20 @@ const rightMenu = ref({
 
 onMounted(() => {
   getMenuList({})
+  document.addEventListener('click', (e) => {
+    rightMenu.isShow = false
+  })
 })
-const openMenu = (event, item) => {
-  this.rightMenu.x = event.clientX
-  this.rightMenu.y = event.clientY
-  event.preventDefault()
-  this.rightMenu.isShow = !this.rightMenu.isShow
+const openMenu = (val) => {
+  rightMenu.x = val.x
+  rightMenu.y = val.y
+  rightMenu.isShow = true
 }
-
 const menuClick = (menu) => {
   console.log(menu)
   isShowDocs.value = false
   store.commit('setNote', menu)
 }
-// function viewDocs(item) {
-//   this.isShowDocs = true
-//   store.commit('setNote', item)
-//   console.log(this.isShowDocs)
-//   console.log(item)
-// }
-
-// function downMenu(event) {
-//   event.preventDefault()
-//   this.isShowDocs = false
-//   console.log(event, this);
-// }
 </script>
 
 <template>
@@ -109,29 +93,11 @@ const menuClick = (menu) => {
         <el-aside width="200px">
           <el-scrollbar>
             <el-menu default-active="1">
-              <MenuTree :menuList="menuList" @menuClick="menuClick" />
-              <!-- <el-sub-menu
-                :index="`menu_key` + key"
-                v-for="(menus, key) in menuList"
-                @click.right.native="openMenu($event, menus.menu_id)"
-                @click.native="downMenu($event, menus.menu_id)"
-              >
-                <template #title>
-                  <el-icon>
-                    <FolderOpened /> </el-icon
-                  >{{ menus.name }}
-                </template>
-                <el-menu-item
-                  v-for="(note, key) in menus.notes"
-                  :index="`note_key` + key"
-                  @click="viewDocs(note)"
-                >
-                  <el-icon>
-                    <DocumentCopy /> </el-icon
-                  >{{ note.name }}
-                </el-menu-item>
-                <MenuTree :menuList="menus.children == null ?? []" />
-              </el-sub-menu> -->
+              <MenuTree
+                :menuList="menuList"
+                @menuClick="menuClick"
+                @openMenu="openMenu"
+              />
             </el-menu>
           </el-scrollbar>
         </el-aside>

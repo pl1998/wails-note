@@ -6,13 +6,18 @@ const props = defineProps({
     default: () => [],
   },
 })
-
-const openMenu = (event, menus) => {
+const emit = defineEmits(['menuClick', 'openMenu'])
+const openMenu = (event, id) => {
   event.preventDefault()
+  emit('openMenu', {
+    x: event.clientX,
+    y: event.clientY,
+    id
+  })
 }
-const emit = defineEmits(['menuClick', 'isEditDocs'])
+
 const menuClick = (menu) => {
-    emit('menuClick', menu)
+  emit('menuClick', menu)
 }
 </script>
 <template>
@@ -21,7 +26,7 @@ const menuClick = (menu) => {
       <el-sub-menu
         :index="item.menu_id + ''"
         v-if="item.notes.length > 0"
-        @click.right.native="openMenu($event, menus.menu_id)"
+        @click.right.native="openMenu($event, item.menu_id)"
       >
         <template #title>
           <el-icon> <FolderOpened /> </el-icon>
