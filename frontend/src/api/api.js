@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
  
 // 创建axios实例
 const instance = axios.create({
-  baseURL: 'http://localhost:7999', // 替换为你的后端接口地址
+  baseURL: 'http://im.pltrue.top', // 替换为你的后端接口地址
   timeout: 10000, // 请求超时时间
 });
  
