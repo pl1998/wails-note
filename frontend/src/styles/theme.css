@@ -1,0 +1,17 @@
+.light{
+  --mainColor: #fff;
+  --borderColor: #eee;
+  --el-fill-color-blank: #fff;
+  --rightColor: #fff;
+  --rightHoverColor: #f5f5f5;
+  --textColor: #555;
+}
+
+.dark{
+  --mainColor: #121212;
+  --borderColor: #3b3b3b;
+  --el-fill-color-blank: #121212;
+  --rightColor: #3b3b3b;
+  --textColor: #fff;
+  --rightHoverColor: #4b4949;
+}

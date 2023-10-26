@@ -1,246 +1,217 @@
 <script setup>
-import MdEditorV3 from './components/MdEditorV3.vue'
-import MenuTree from './components/MenuTree.vue'
-import CreateFile from './components/CreateFile.vue'
-import RightMenu from './components/menus/RightMenu.vue'
-import { ref, onMounted, watch, nextTick ,computed} from 'vue'
-import {  Setting } from '@element-plus/icons-vue'
-import { Moon, Sunny, FolderOpened, DocumentCopy,MoreFilled } from '@element-plus/icons-vue'
-import { store } from './store/index'
-import { getMenuList, deleleMenu } from './api/menu'
-import { useDark, useToggle } from '@vueuse/core'
-const isDark = useDark()
-const toggleDark = useToggle(isDark)
-const notes = computed(() => store.state.notes ?? {
-  name: "",
-  menu_id: 0,
-  content: "# Hello Editor",
-  note_id: 0,
-  is_dir: 0,
-})
-const isShowDocs = ref(false)
-const isEditDocs = ref(false)
-const openSetting = ref(false)
-const centerDialogVisible = ref(false)
-const isLeftMenu = ref(false)
-const createDir = ref({
-  "p_id":0
-})
+import { ref, computed } from 'vue'
+import { getMenuList, addMenu, updateMenu, deleleMenu } from '@/api/menu'
+import MenuList from './components/MenuList.vue'
+import MyEditor from './components/MyEditor.vue'
+import { ElMessage } from 'element-plus'
+import { useBaseInfo } from './store'
 
-const menuList = computed({
-  // getter
-  get() {
-    return store.state.menuList ?? []
-  },
-  // setter
-  set(value) {
-    nextTick()
-    store.commit('setMenuList', value)
+const baseInfo = useBaseInfo()
+const theme = computed(() => baseInfo.theme)
+window.oncontextmenu = function (e) {
+  //取消默认的浏览器自带右键 很重要！！
+  e.preventDefault()
+}
+const menuData = ref([])
+const getMenuListFn = async () => {
+  const res = await getMenuList()
+  menuData.value = res.data
+  console.log(menuData.value)
+}
+getMenuListFn()
+// 新增
+const addMenuClick = async (params) => {
+  const res = await addMenu(params)
+  ElMessage.success('新增成功')
+  console.log(res)
+  noteInfo.value = res.data
+  getMenuListFn()
+  isEdit.value = false
+}
+// 编辑
+const updateMenuClick = async (params) => {
+  const res = await updateMenu(params)
+  console.log(res)
+  ElMessage.success('编辑成功')
+  getMenuListFn()
+  isEdit.value = false
+}
+// 删除
+const deleteMenuClick = async (params) => {
+  await deleleMenu(params)
+  ElMessage.success('删除成功')
+  getMenuListFn()
+}
+const noteInfo = ref({})
+const isEdit = ref(false)
+const noteClick = (menu) => {
+  isEdit.value = false
+  noteInfo.value = menu
+}
+const toolClick = (params) => {
+  const { type, p_id, name, menuInfo } = params
+  switch (type) {
+    case 'create-document':
+      noteInfo.value = {
+        content: '',
+        name,
+        p_id,
+        type,
+      }
+      isEdit.value = true
+      break
+    case 'create-catalog':
+      const params = {
+        name: name,
+        p_id: p_id,
+        is_dir: 1,
+        content: '',
+      }
+      addMenuClick(params)
+      break
+    case 'edit':
+      if (menuInfo.is_dir === 1) {
+        updateMenuClick(menuInfo)
+        return
+      }
+      noteInfo.value = menuInfo
+      noteInfo.value.type = 'edit'
+      isEdit.value = true
+      break
+    case 'delete':
+      if (menuInfo.menu_id === noteInfo.value.menu_id && isEdit.value) {
+        return ElMessage.warning('文档编辑中，无法删除！')
+      } else {
+        deleteMenuClick(menuInfo.menu_id)
+        if (menuInfo.menu_id === noteInfo.value.menu_id) {
+          noteInfo.value = {}
+        }
+      }
+
+      break
   }
-})
-watch(menuList, (value, old) => {
-  console.log('menuList watch更新' + value)
-  nextTick()
-})
-
-const rightMenu = ref({
-  x: 100,
-  y: 100,
-  isShow: false,
-  menu_id: 0,
-  menus: {}
-})
-
-onMounted(() => {
-  getMenuList({})
-})
-function createDocs() {
-  centerDialogVisible.value = true
-}
-function openMenu(event, menu) {
-  event.preventDefault()
-  this.rightMenu.x = event.clientX
-  this.rightMenu.y = event.clientY
-  isLeftMenu.value = !isLeftMenu.value
-  this.rightMenu.menu_id = menu.menu_id
-  this.rightMenu.menus = menu
-}
-function viewDocs(menus) {
-  isEditDocs.value = false
-  isShowDocs.value = false
-  isShowDocs.value = true
-  openIsLeftMenu()
-  store.commit('setNote', menus)
-}
-const addDocs = (e) => {
-
-  console.log(e.menu_id)
-  isShowDocs.value = false
-  isShowDocs.value = true
-  openIsLeftMenu()
-  store.commit('setNote', {
-    name: "",
-    menu_id: 0,
-    content: "",
-    note_id: 0,
-    p_id:e.menu_id,
-    is_dir:0,
-    menus:e
-  })
-  isEditDocs.value = true
-}
-function delDocs(id) {
-  store.commit('setNote', {})
-  store.commit('setIsShowDocs', false)
 }
 
-function downMenu(event) {
-  isLeftMenu.value = false
+const saveClick = (val) => {
+  const type = noteInfo.value.type
+  switch (type) {
+    case 'create-document':
+      const params = {
+        name: val.name,
+        p_id: noteInfo.value.p_id,
+        is_dir: 0,
+        content: val.content,
+      }
+      addMenuClick(params)
+      break
+    case 'edit':
+      const info = {
+        name: val.name,
+        p_id: noteInfo.value.p_id,
+        is_dir: 0,
+        content: val.content,
+        menu_id: noteInfo.value.menu_id,
+        note_id: noteInfo.value.note_id || 0,
+      }
+      updateMenuClick(info)
+      break
+  }
 }
-
-function openIsLeftMenu() {
-  event.preventDefault()
-  isLeftMenu.value = !isLeftMenu.value
+const themeType = ref(false)
+const themeRes = localStorage.getItem('theme') || 'light'
+themeType.value = themeRes === 'light'
+const themeChange = () => {
+  const type = themeType.value ? 'light' : 'dark'
+  baseInfo.changeTheme(type)
 }
-
-const downCenterDialogVisible = () => {
-  centerDialogVisible.value = false
-}
-
-const onUpdateMenus = (menus) => {
-  isShowDocs.value = true
-  store.commit('setNote', menus)
-  console.log('onUpdateMenus')
-}
-
-const delMenu = (value) => {
-  openIsLeftMenu()
-  deleleMenu(value)
-}
-const addDir = (menuId) => {
-  createDir.p_id = menuId
-  centerDialogVisible.value = true
-  console.log('测试',createDir.p_id)
-  openIsLeftMenu()
-}
-const editDocs = (menus) => {
-  isShowDocs.value = false
-  isShowDocs.value = true
-  isEditDocs.value = true
-  rightMenu.menus = menus
-  store.commit('setNote', menus)
-  openIsLeftMenu()
-}
-
 </script>
 
 <template>
-  <el-container class="layout-container" @click.left.native="downMenu($event, menus)">
-    <!-- 表头 -->
-    <el-header style="text-align: right; font-size: 12px">
-      <div class="theme">
-        <el-switch @click="!isDark" v-model="isDark" class="mt-2" size="large"
-          style="--el-switch-off-color: #73767a;--el-switch-on-color: #73767a" inline-prompt :active-icon="Sunny"
-          :inactive-icon="Moon" />
+  <div class="container" :class="theme">
+    <div class="head">
+      <div class="tool">
+        <div class="item">菜单展示</div>
+        <div class="item">侧边栏展示</div>
       </div>
-      <div class="toolbar">
-        <el-icon style="margin-right: 8px; margin-top: 1px" @click="openSetting = true" ><Setting /></el-icon>
-      </div>
-    </el-header>
-    <!-- 菜单栏 -->
-    <el-container>
-      <div>
-        <el-aside width="200px" v-if="menuList != null">
-          <el-scrollbar>
-            <el-menu v-for="(menus, key) in menuList">
-              <el-sub-menu :index="`menu` + key" v-if="menus.is_dir == 1" @click.right.native="openMenu($event, menus)">
-                <template #title>
-                  <el-icon>
-                    <FolderOpened />
-                  </el-icon>{{ menus.name }}
-<!--                  <div style="display: flex;justify-content: flex-end;height: 100%;width: 100%">-->
-<!--                    <el-icon @click="openMenu($event,menus)" style="height: 100%">-->
-<!--                      <MoreFilled />-->
-<!--                    </el-icon>-->
-<!--                  </div>-->
-                </template>
-                <MenuTree v-if="menus.children != null" :isShowDocs="isShowDocs" :menuList="menus.children" @changeMenus="onUpdateMenus" />
-              </el-sub-menu>
-              <el-menu-item v-else :index="`menu` + key" @click="viewDocs(menus)"
-                @click.right.native="openMenu($event, menus)">
-                <el-icon>
-                  <DocumentCopy />
-                </el-icon>{{ menus.name }}
-              </el-menu-item>
-            </el-menu>
-          </el-scrollbar>
-        </el-aside>
-        <el-empty v-if="menuList.length == 0">
-          <el-button type="primary" @click="createDocs">创建文档</el-button>
+      <el-switch
+        v-model="themeType"
+        class="ml-2"
+        @change="themeChange"
+        style="--el-switch-on-color: #13ce66; --el-switch-off-color: #73767a"
+      />
+    </div>
+    <div class="content">
+      <div class="aside">
+        <MenuList
+          ref="menuRef"
+          v-if="menuData.length"
+          :menu-list="menuData"
+          :menuInfo="noteInfo"
+          @noteClick="noteClick"
+          @toolClick="toolClick"
+        ></MenuList>
+        <el-empty v-if="menuData.length === 0">
+          <el-button type="primary">创建文档</el-button>
         </el-empty>
       </div>
-      <el-main>
-
-        <el-scrollbar v-if="isShowDocs">
-          <!-- <EditMarkdown v-bind="notes" /> -->
-          <MdEditorV3 v-bind="notes" :isEditDocs="isEditDocs" />
-
-        </el-scrollbar>
-      </el-main>
-    </el-container>
-    <!-- 设置弹窗 -->
-    <el-dialog v-model="openSetting" title="设置" width="70%" align-center>
-      <div style="height:600px;display:block"></div>
-    </el-dialog>
-    <RightMenu v-if="isLeftMenu" :x="rightMenu.x" :y="rightMenu.y" :menus="rightMenu.menus" :menuId="rightMenu.menu_id"
-      :is-show="isLeftMenu" @addDocs="addDocs" @delMenu="delMenu" @addDir="addDir" @editDocs="editDocs" />
-    <CreateFile v-if="centerDialogVisible" :centerDialogVisible="centerDialogVisible" @onSubmit="downCenterDialogVisible" :pId="rightMenu.menu_id" />
-  </el-container>
+      <div class="main">
+        <MyEditor
+          :content="noteInfo.content"
+          :isEdit="isEdit"
+          :title="noteInfo.name"
+          @saveClick="saveClick"
+        ></MyEditor>
+      </div>
+    </div>
+  </div>
 </template>
 
+<style scoped lang="less">
+.container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--mainColor);
 
-<style scoped>
-.layout-container {
-  height: 100%;
-}
-
-.layout-container .el-header {
-  position: relative;
-}
-
-.layout-container .el-aside {}
-
-.layout-container .el-menu {
-  border-right: none;
-}
-
-.layout-container .el-main {
-  padding: 0;
-}
-
-.layout-container .toolbar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  right: 20px;
-  margin-left: 20px;
-}
-
-.layout-container .theme {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  right: 20px;
-}
-
-.layout-container .theme .el-switch.is-checked .el-switch__core {}
-
-.el-aside .el-scrollbar__view .el-scrollbar__view ui .el-sub-menu__title {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  .head {
+    width: 100%;
+    height: 60px;
+    border-bottom: 1px solid var(--borderColor);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    padding: 0 20px;
+    .tool {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      margin-right: 20px;
+      .item {
+        padding: 0 20px;
+        border-right: 1px solid var(--borderColor);
+        cursor: pointer;
+      }
+    }
+  }
+  .content {
+    width: 100%;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    .aside {
+      width: 250px;
+      height: 100%;
+      overflow-y: auto;
+      border-right: 1px solid var(--borderColor);
+      // background-color: pink;
+    }
+    .main {
+      flex: 1;
+      overflow: hidden;
+      // background-color: yellow;
+    }
+  }
 }
 </style>
-

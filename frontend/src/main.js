@@ -1,20 +1,18 @@
 import { createApp } from 'vue'
+import './styles/reset.less'
+import './styles/theme.css'
 import App from './App.vue'
-import './style.css';
-
+import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
-import 'element-plus/theme-chalk/dark/css-vars.css'
 import 'element-plus/dist/index.css'
-import 'element-plus/theme-chalk/display.css'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+// 导入自定义指令
+import { vContextmenu } from './directive/contextMenu';
 
-import { MdEditor } from 'md-editor-v3';
-import 'md-editor-v3/lib/style.css';
-import 'md-editor-v3/lib/preview.css';
-
-
-createApp(App).
-use(ElementPlus).
-use(MdEditor).
-mount('#app')
-
-
+const app = createApp(App)
+app.directive('contextmenu', vContextmenu);
+app.use(ElementPlus, {
+  locale: zhCn,
+})
+app.use(createPinia())
+app.mount('#app')
