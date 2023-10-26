@@ -1,31 +1,14 @@
-import { createStore } from 'vuex'
+import { defineStore } from 'pinia'
 
-export const store = createStore({
-  state() {
-    return {
-      theme: "light",
-      menuList: [],
-      notes: {
-        note_id: 0,
-        name: 'name',
-        content: '',
-        menu_id: 1
-      },
-      isShowDocs: false,
+export const useBaseInfo = defineStore('baseInfo', {
+  state: () => ({
+    theme: localStorage.getItem('theme') || 'light', //dark
+  }),
+  actions: {
+    changeTheme(type){
+      localStorage.setItem('theme', type)
+      this.theme = type
     }
   },
-  mutations: {
-    setTheme(state, theme) {
-      state.theme = theme
-    },
-    setMenuList(state, list) {
-      state.menuList = list
-    },
-    setNote(state, notes) {
-      state.notes = notes
-    },
-    setIsShowDocs(state, value) {
-      state.isShowDocs = value
-    }
-  }
+  getters: {},
 })
