@@ -100,8 +100,8 @@ const toolClick = (type) => {
                 p_id: menuInfo.value.p_id,
                 is_dir: 1,
                 content: '',
-                menu_id: menuInfo.value.menu_id
-              }
+                menu_id: menuInfo.value.menu_id,
+              },
             })
           })
           .catch(() => {})
@@ -172,48 +172,50 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="operation">
-    <div class="icon" title="新增顶级文档" @click="addClick('document')">
-      <el-icon><DocumentAdd /></el-icon>
+  <div class="menu-list">
+    <div class="operation">
+      <div class="icon" title="新增顶级文档" @click="addClick('document')">
+        <el-icon><DocumentAdd /></el-icon>
+      </div>
+      <div class="icon" title="新增顶级目录" @click="addClick('dir')">
+        <el-icon><FolderAdd /></el-icon>
+      </div>
     </div>
-    <div class="icon" title="新增顶级目录" @click="addClick('dir')">
-      <el-icon><FolderAdd /></el-icon>
+    <div class="tree-wrap">
+      <el-tree
+        class="tree"
+        :data="menuList"
+        @node-click="noteClick"
+        @node-contextmenu="contextmenuClick"
+        default-expand-all
+        :props="{
+          class: (data, node) => {
+            if (data.is_dir === 1) {
+              return ''
+            }
+            return data.menu_id === noteInfo.menu_id ? 'active' : ''
+          },
+          children: 'children',
+          label: 'name',
+        }"
+      >
+        <template #default="{ data }">
+          <div class="option">
+            <div class="icon" v-if="data && data.is_dir === 1">
+              <el-icon>
+                <FolderOpened />
+              </el-icon>
+            </div>
+            <div class="icon" v-if="data && data.is_dir !== 1">
+              <el-icon>
+                <DocumentCopy />
+              </el-icon>
+            </div>
+            <div class="name">{{ data && data.name }}</div>
+          </div>
+        </template>
+      </el-tree>
     </div>
-  </div>
-  <div class="tree-wrap">
-    <el-tree
-      class="tree"
-      :data="menuList"
-      @node-click="noteClick"
-      @node-contextmenu="contextmenuClick"
-      default-expand-all
-      :props="{
-        class: (data, node) => {
-          if (data.is_dir === 1) {
-            return ''
-          }
-          return data.menu_id === noteInfo.menu_id ? 'active' : ''
-        },
-        children: 'children',
-        label: 'name',
-      }"
-    >
-      <template #default="{ data }">
-        <div class="option">
-          <div class="icon" v-if="data && data.is_dir === 1">
-            <el-icon>
-              <FolderOpened />
-            </el-icon>
-          </div>
-          <div class="icon" v-if="data && data.is_dir !== 1">
-            <el-icon>
-              <DocumentCopy />
-            </el-icon>
-          </div>
-          <div class="name">{{ data && data.name }}</div>
-        </div>
-      </template>
-    </el-tree>
   </div>
   <div
     class="contextmenu"
@@ -253,22 +255,33 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="less">
-.operation {
-  display: flex;
+.menu-list {
   width: 100%;
-  height: 30px;
-  align-items: center;
-  justify-content: flex-end;
-  box-sizing: border-box;
-  padding: 0 10px;
-  border-bottom: 1px solid var(--borderColor);
-  .icon {
-    margin-right: 10px;
-    cursor: pointer;
-    color: #555;
-    &:hover {
-      color: #0c64eb;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  .operation {
+    display: flex;
+    width: 100%;
+    height: 30px;
+    align-items: center;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border-bottom: 1px solid var(--borderColor);
+    .icon {
+      margin-right: 10px;
+      cursor: pointer;
+      color: #555;
+      &:hover {
+        color: #0c64eb;
+      }
     }
+  }
+  .tree-wrap {
+    flex: 1;
+    overflow-y: auto;
   }
 }
 .tree {

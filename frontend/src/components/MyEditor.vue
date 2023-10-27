@@ -133,6 +133,7 @@ const saveClick = () => {
       font-size: 14px;
       :deep(.md-editor-catalog) {
         height: 100%;
+        overflow-y: auto;
       }
     }
     .right {
