@@ -124,14 +124,26 @@ const themeChange = () => {
   const type = themeType.value ? 'light' : 'dark'
   baseInfo.changeTheme(type)
 }
+const showMenu = computed(() => baseInfo.showMenu)
+const showAside = computed(() => baseInfo.showAside)
+const showMenuClick = () => {
+  baseInfo.changeShowMenu()
+}
+const showAsideClick = () => {
+  baseInfo.changeShowAside()
+}
 </script>
 
 <template>
   <div class="container" :class="theme">
     <div class="head">
       <div class="tool">
-        <div class="item">菜单展示</div>
-        <div class="item">侧边栏展示</div>
+        <div class="item" @click="showAsideClick">
+          {{ showAside ? '隐藏侧边栏' : '显示侧边栏' }}
+        </div>
+        <div class="item" @click="showMenuClick">
+          {{ showMenu ? '隐藏菜单' : '显示菜单' }}
+        </div>
       </div>
       <el-switch
         v-model="themeType"
@@ -141,7 +153,7 @@ const themeChange = () => {
       />
     </div>
     <div class="content">
-      <div class="aside">
+      <div class="aside" v-if="showAside">
         <MenuList
           ref="menuRef"
           v-if="menuData.length"
@@ -150,9 +162,7 @@ const themeChange = () => {
           @noteClick="noteClick"
           @toolClick="toolClick"
         ></MenuList>
-        <el-empty v-if="menuData.length === 0">
-          <el-button type="primary">创建文档</el-button>
-        </el-empty>
+        <el-empty v-if="menuData.length === 0"> </el-empty>
       </div>
       <div class="main">
         <MyEditor
@@ -192,6 +202,7 @@ const themeChange = () => {
         padding: 0 20px;
         border-right: 1px solid var(--borderColor);
         cursor: pointer;
+        color: var(--textColor);
       }
     }
   }

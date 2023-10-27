@@ -7,6 +7,7 @@ import { useBaseInfo } from '@/store'
 
 const baseInfo = useBaseInfo()
 const theme = computed(() => baseInfo.theme)
+const showMenu = computed(() => baseInfo.showMenu)
 const props = defineProps({
   content: {
     type: String,
@@ -64,7 +65,7 @@ const saveClick = () => {
       </div>
     </div>
     <div class="view" v-else>
-      <div class="left">
+      <div class="left" v-show="showMenu">
         <MdCatalog :editorId="id" :theme="theme" :modelValue="noteText" />
       </div>
       <div class="right">
